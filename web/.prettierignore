@@ -1,0 +1,5 @@
+build/
+.svelte-kit/
+package-lock.json
+# Markdown is hand-written; Prettier would re-pad its tables.
+*.md

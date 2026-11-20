@@ -1,0 +1,10 @@
+.{
+    .name = .log,
+    .version = "0.0.1",
+    .minimum_zig_version = "0.17.0",
+    .fingerprint = 0x8f3f68c59499cee4,
+    .dependencies = .{
+        .ztracy = .{ .path = "ztracy" },
+    },
+    .paths = .{""},
+}

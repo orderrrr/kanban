@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Ticket Board</title>
+<style>
+  body { font: 15px/1.4 system-ui, sans-serif; margin: 24px; color: #222; }
+  .proto { color: #a00; font-weight: 600; }
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
+  .col { background: #f3f3f3; border-radius: 6px; padding: 10px; }
+  .col h2 { font-size: 16px; margin: 0 0 8px; }
+  .ticket { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+  .ticket h3 { font-size: 15px; margin: 0; }
+  .dates { font-size: 13px; color: #666; margin: 2px 0 6px; }
+  .overdue { color: #b3261e; font-weight: 600; }
+  .bar { height: 4px; background: #eee; border-radius: 2px; margin-bottom: 6px; }
+  .bar div { height: 4px; background: #1a7a33; border-radius: 2px; }
+  label { display: block; font-size: 14px; }
+  label.done { color: #999; text-decoration: line-through; }
+  input[type=text] { width: 100%; font: inherit; font-size: 13px; margin-top: 4px; box-sizing: border-box; }
+  .move { margin-top: 6px; } .move button { font-size: 12px; }
+</style>
+</head>
+<body>
+<p class="proto">PROTOTYPE. Fake data. Nothing is saved. Today is 03/11/2026.</p>
+<div class="board" id="board"></div>
+
+<script>
+const COLS = ['To do', 'In progress', 'Done'];
+const today = '2026-11-03';
+const t = (title, done = false) => ({ title, done });
+const tickets = [
+  { id: 'DEV-1240', name: 'Search index', col: 0, start: '2026-11-09', due: '2026-11-16', tasks: [t('Write the design note'), t('Develop with tests'), t('Deploy to staging')] },
+  { id: 'DEV-1260', name: 'Export to CSV', col: 0, start: '2026-10-30', due: '2026-10-31', tasks: [t('Confirm acceptance tests'), t('Write the design note')] },
+  { id: 'DEV-1234', name: 'Login page', col: 1, start: '2026-10-27', due: '2026-11-11', tasks: [t('Write the design note', true), t('Create branch', true), t('Develop with tests'), t('Write the deploy script'), t('Run integration tests'), t('Request review')] },
+  { id: 'DEV-1251', name: 'Fix session timeout', col: 1, start: '2026-11-02', due: '2026-11-05', tasks: [t('Reproduce on staging', true), t('Fix and unit test'), t('Code review')] },
+  { id: 'DEV-1262', name: 'Monthly usage report', col: 2, start: '2026-10-26', due: '2026-11-07', tasks: [t('Hand over for acceptance', true), t('Support acceptance tests', true)] },
+];
+const ddmm = d => d.slice(8) + '/' + d.slice(5, 7);
+
+function render() {
+  document.getElementById('board').innerHTML = COLS.map((col, ci) => `
+    <div class="col"><h2>${col}</h2>${tickets.map((k, ki) => k.col !== ci ? '' : (() => {
+      const n = k.tasks.filter(x => x.done).length, late = ci < 2 && k.due < today;
+      return `<div class="ticket"><h3>${k.id} · ${k.name}</h3>
+        <div class="dates ${late ? 'overdue' : ''}">${ddmm(k.start)} to ${ddmm(k.due)}${late ? ' · overdue' : ''} · ${n} of ${k.tasks.length} done</div>
+        <div class="bar"><div style="width:${100 * n / k.tasks.length}%"></div></div>
+        ${k.tasks.map((x, xi) => `<label class="${x.done ? 'done' : ''}"><input type="checkbox" ${x.done ? 'checked' : ''} onchange="tickets[${ki}].tasks[${xi}].done = this.checked; render()"> ${x.title}</label>`).join('')}
+        <input type="text" placeholder="Add a task, press Enter" onkeydown="if (event.key === 'Enter' && this.value) { tickets[${ki}].tasks.push(t(this.value)); render() }">
+        <div class="move">${ci > 0 ? `<button onclick="tickets[${ki}].col--; render()">◀ ${COLS[ci - 1]}</button>` : ''} ${ci < 2 ? `<button onclick="tickets[${ki}].col++; render()">${COLS[ci + 1]} ▶</button>` : ''}</div>
+      </div>`;
+    })()).join('')}</div>`).join('');
+}
+render();
+</script>
+</body>
+</html>
